@@ -1,0 +1,27 @@
+services:
+  - type: web
+    name: socialsphere-backend
+    env: python
+    buildCommand: |
+      pip install -r requirements.txt
+      python manage.py collectstatic --no-input
+      python manage.py migrate
+    startCommand: gunicorn socialsphere.wsgi:application
+    envVars:
+      - key: SECRET_KEY
+        value: "bde8h$b2tl=f@1s=&dkj%4yiyv88xgeftu54hzsj4dh4ju%dvv"
+      - key: DEBUG
+        value: False
+      - key: DATABASE_URL
+        fromDatabase:
+          name: socialsphere-db
+          property: connectionString
+      - key: ALLOWED_HOSTS
+        value: .onrender.com
+      - key: CORS_ALLOWED_ORIGINS
+        value: https://your-frontend-url.vercel.app
+
+databases:
+  - name: socialsphere-db
+    databaseName: socialsphere
+    user: socialsphere

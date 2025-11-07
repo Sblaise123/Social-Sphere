@@ -1,7 +1,8 @@
 from django.contrib import admin
 from django.urls import path, include
 from django.conf import settings
-
+from django.conf.urls.static import static
+from rest_framework import permissions
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -9,11 +10,12 @@ urlpatterns = [
     path('api/posts/', include('posts.urls')),
 ]
 
+# Serve media files in development
 if settings.DEBUG:
-    try:
-        from django.conf.urls.static import static
-    except Exception:
-        # If django isn't installed in this environment (e.g. static analysis),
-        # provide a noop fallback so the module import doesn't fail.
-        static = lambda *a, **k: []
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+    urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
+
+# Custom admin site headers
+admin.site.site_header = "SocialSphere Administration"
+admin.site.site_title = "SocialSphere Admin"
+admin.site.index_title = "Welcome to SocialSphere Administration"
