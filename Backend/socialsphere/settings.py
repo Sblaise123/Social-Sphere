@@ -1,8 +1,5 @@
 import os
-try:
-    import dj_database_url
-except Exception:
-    dj_database_url = None
+import dj_database_url
 from pathlib import Path
 from datetime import timedelta
 from decouple import config
@@ -66,38 +63,15 @@ TEMPLATES = [
         },
     },
 ]
-# Database
-# https://docs.djangoproject.com/en/4.2/ref/settings/#databases
 
-def _parse_database_url(url):
-    from urllib.parse import urlparse, unquote
-    parsed = urlparse(url)
-    scheme = parsed.scheme or ''
-    if scheme.startswith('postgres'):
-        engine = 'django.db.backends.postgresql'
-    elif scheme in ('mysql', 'mysql2'):
-        engine = 'django.db.backends.mysql'
-    elif scheme in ('sqlite', 'sqlite3'):
-        engine = 'django.db.backends.sqlite3'
-    else:
-        engine = 'django.db.backends.postgresql'
-    name = parsed.path.lstrip('/') or ''
-    user = unquote(parsed.username) if parsed.username else ''
-    password = unquote(parsed.password) if parsed.password else ''
-    host = parsed.hostname or ''
-    port = str(parsed.port) if parsed.port else ''
-    return {
-        'ENGINE': engine,
-        'NAME': name,
-        'USER': user,
-        'PASSWORD': password,
-        'HOST': host,
-        'PORT': port,
-    }
-DATABASE_URL = config('DATABASE_URL', default=None)
+WSGI_APPLICATION = 'socialsphere.wsgi.application'
+
+# Database Configuration - SINGLE SOURCE OF TRUTH
+# Try environment variable first, then decouple config, then fallback to SQLite
+DATABASE_URL = os.environ.get('DATABASE_URL') or config('DATABASE_URL', default=None)
 
 if DATABASE_URL:
-    # Production database from DATABASE_URL
+    # Production: Use PostgreSQL from DATABASE_URL
     DATABASES = {
         'default': dj_database_url.config(
             default=DATABASE_URL,
@@ -106,42 +80,11 @@ if DATABASE_URL:
         )
     }
 else:
-    # Development database - fallback
+    # Development: Fallback to SQLite
     DATABASES = {
         'default': {
-            'ENGINE': 'django.db.backends.postgresql',
-            'NAME': config('DB_NAME', default='socialsphere'),
-            'USER': config('DB_USER', default='postgres'),
-            'PASSWORD': config('DB_PASSWORD', default='postgres'),
-            'HOST': config('DB_HOST', default='localhost'),
-            'PORT': config('DB_PORT', default='5432'),
-        }
-    }
-if config('DATABASE_URL', default=None):
-    # Production database from DATABASE_URL
-    DATABASE_URL = config('DATABASE_URL')
-    if dj_database_url:
-        DATABASES = {
-            'default': dj_database_url.config(
-                default=DATABASE_URL,
-                conn_max_age=600,
-                conn_health_checks=True,
-            )
-        }
-    else:
-        DATABASES = {
-            'default': _parse_database_url(DATABASE_URL)
-        }
-else:
-    # Development database
-    DATABASES = {
-        'default': {
-            'ENGINE': 'django.db.backends.postgresql',
-            'NAME': config('DB_NAME', default='socialsphere'),
-            'USER': config('DB_USER', default='postgres'),
-            'PASSWORD': config('DB_PASSWORD', default='postgres'),
-            'HOST': config('DB_HOST', default='localhost'),
-            'PORT': config('DB_PORT', default='5432'),
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': BASE_DIR / 'db.sqlite3',
         }
     }
 
@@ -295,21 +238,3 @@ LOGGING = {
         },
     },
 }
-DATABASE_URL = os.environ.get('DATABASE_URL')
-
-if DATABASE_URL:
-    DATABASES = {
-        'default': dj_database_url.config(
-            default=DATABASE_URL,
-            conn_max_age=600,
-            conn_health_checks=True,
-        )
-    }
-else:
-    # Fallback for local development
-    DATABASES = {
-        'default': {
-            'ENGINE': 'django.db.backends.sqlite3',
-            'NAME': BASE_DIR / 'db.sqlite3',
-        }
-    }
