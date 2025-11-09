@@ -75,10 +75,11 @@ export const AuthProvider = ({ children }) => {
     setUser(userData);
   };
 
+  // IMPORTANT: Return JSX, not an object!
   return (
-    
+    <AuthContext.Provider value={{ user, login, register, logout, updateUser, loading }}>
       {children}
-    
+    </AuthContext.Provider>
   );
 };
 

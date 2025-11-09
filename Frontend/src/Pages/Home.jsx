@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { postsAPI } from '../services/api';
 import CreatePost from '../components/CreatePost';
 import PostCard from '../components/PostCard';
-import LoadingSpinner from '../components/LoadingSpinner';
+//import LoadingSpinner from '../components/LoadingSpinner';
 
 const Home = () => {
   const [posts, setPosts] = useState([]);
@@ -45,10 +45,6 @@ const Home = () => {
       console.error('Error loading more posts:', error);
     }
   };
-
-  if (loading) {
-    return <LoadingSpinner />;
-  }
 
   return (
     <div className="max-w-2xl mx-auto px-4 py-8">
